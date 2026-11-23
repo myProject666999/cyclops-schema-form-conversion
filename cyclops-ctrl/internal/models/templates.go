@@ -55,4 +55,39 @@ type Field struct {
 	MinLength *int    `json:"minLength"`
 	MaxLength *int    `json:"maxLength"`
 	Pattern   *string `json:"pattern"`
+
+	// Variants holds the alternative shapes of a oneOf/anyOf property. The
+	// frontend renders a selector over them; each variant carries its own field
+	// subtree. When the schema has no discriminator the variant titles are their
+	// ordinal and HasDiscriminator is false.
+	Variants         []FieldVariant `json:"variants,omitempty"`
+	Discriminator    string         `json:"discriminator,omitempty"`
+	HasDiscriminator bool           `json:"has_discriminator,omitempty"`
+	VariantNote      string         `json:"variant_note,omitempty"`
+	// Condition, when set, tells the frontend to show this field only when the
+	// referenced field equals the given constant (or, for dependentRequired, is
+	// present at all).
+	Condition *FieldCondition `json:"condition,omitempty"`
+	// ReadOnly is set for a field whose value cannot be edited, e.g. a
+	// single-valued enum or a const. The field stays visible.
+	ReadOnly bool `json:"read_only,omitempty"`
+}
+
+// FieldVariant is one branch of a oneOf/anyOf composition.
+type FieldVariant struct {
+	Title  string `json:"title"`
+	Fields Field  `json:"fields"`
+}
+
+// FieldCondition expresses a single supported dependency form. When Required is
+// false the field is shown only while the condition holds; when Required is true
+// the field stays visible but is mandatory only while the condition holds. The
+// condition is "the field at Path equals Value" or, when Present is true, "the
+// field at Path is set". Richer if/then/else expressions are not converted.
+type FieldCondition struct {
+	Path string `json:"path"`
+	// Value has no omitempty so a constant false or 0 survives serialisation.
+	Value    interface{} `json:"value"`
+	Present  bool        `json:"present,omitempty"`
+	Required bool        `json:"required,omitempty"`
 }

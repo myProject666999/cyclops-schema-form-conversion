@@ -221,9 +221,14 @@ func (r Repo) mapHelmChart(chartName string, files map[string][]byte) (*models.T
 	}
 	// endregion
 
+	rootField, diagnostics := mapper.HelmSchemaToFieldsWithDiagnostics("", schema, schema.Definitions, dependencies)
+	for _, diagnostic := range diagnostics {
+		fmt.Printf("values schema %s: %s\n", chartName, diagnostic.String())
+	}
+
 	return &models.Template{
 		Name:              chartName,
-		RootField:         mapper.HelmSchemaToFields("", schema, schema.Definitions, dependencies),
+		RootField:         rootField,
 		Files:             chartFiles,
 		Templates:         templateFiles,
 		CRDs:              crdFiles,

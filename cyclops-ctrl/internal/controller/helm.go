@@ -165,7 +165,10 @@ func (h *Helm) GetReleaseSchema(ctx *gin.Context) {
 		return
 	}
 
-	rootField := mapper.HelmSchemaToFields("", *root, root.Definitions, nil)
+	rootField, diagnostics := mapper.HelmSchemaToFieldsWithDiagnostics("", *root, root.Definitions, nil)
+	for _, diagnostic := range diagnostics {
+		fmt.Println("values schema:", diagnostic.String())
+	}
 
 	ctx.JSON(http.StatusOK, models.Template{RootField: rootField})
 }
